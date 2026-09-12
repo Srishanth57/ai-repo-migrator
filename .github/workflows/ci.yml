@@ -1,0 +1,31 @@
+name: CI # name shown in GitHub's Actions tab
+
+on: # WHEN does this run?
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+jobs: # WHAT runs?
+  test:
+    runs-on: ubuntu-latest # a fresh Ubuntu VM, thrown away after
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # pulls your repo onto that VM
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Integration test (manual trigger only)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: pytest -q -m integration
