@@ -1,16 +1,20 @@
-import google.generativeai as genai
+from google import genai
 import os
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-2.0-flash")
+
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "dummy-key"))
 
 def get_migration_patch(code: str, instruction: str, error_feedback: str = "") -> str:
     prompt = f"""You are a code migration assistant.
-            Task: {instruction}
-            Return ONLY a unified diff patch, no explanation, no markdown fences.
+Task: {instruction}
+Return ONLY the full rewritten file, no explanation, no markdown fences.
 
-            Code:
-            {code}
+Code:
+{code}
 
-            {f"Previous attempt failed with error: {error_feedback}. Fix it." if error_feedback else ""}
+{f"Previous attempt failed with error: {error_feedback}. Fix it." if error_feedback else ""}
 """
-    return model.generate_content(prompt).text
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
+    return response.text
