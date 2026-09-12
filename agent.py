@@ -1,4 +1,5 @@
 import difflib
+import os
 from llm import get_migration_patch
 from sandbox import run_tests_in_docker
 
