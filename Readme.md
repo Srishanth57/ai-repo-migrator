@@ -1,5 +1,3 @@
-![CI](https://github.com/Srishanth57/ai-repo-migrator/actions/workflows/ci.yml/badge.svg)
-
 # AI Repository Migration Agent
 
 An agentic CLI tool that upgrades code through **tested, sandboxed, human-reviewed** changes — not a chatbot that edits files, but a verification loop that makes AI-generated code changes safe to trust.
@@ -149,7 +147,7 @@ pytest -q
 
 Every push and pull request to `main` automatically triggers the GitHub Actions pipeline (`.github/workflows/ci.yml`), which installs dependencies and runs the full test suite on a clean Ubuntu runner — catching regressions before they merge.
 
-![CI](https://github.com/YOUR_USERNAME/ai-repo-migrator/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Srishanth57/ai-repo-migrator/actions/workflows/ci.yml/badge.svg)
 
 Branching workflow: feature branches (e.g. `feature/gemini-integration`) → pull request into `main` → CI must pass → merge.
 
