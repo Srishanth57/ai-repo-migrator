@@ -1,5 +1,5 @@
-import difflib
 import os
+import difflib
 from llm import get_migration_patch
 from sandbox import run_tests_in_docker
 
@@ -8,17 +8,34 @@ def migrate(filepath, instruction, max_retries=2):
         original = f.read()
 
     error_feedback = ""
+    repo_dir = os.path.dirname(filepath)
+
     for attempt in range(max_retries + 1):
-        patch = get_migration_patch(original, instruction, error_feedback)
-        # naive apply for MVP: ask Gemini to return FULL new file instead of diff (simpler to implement in your time budget)
-        new_code = patch  # if you prompt it to return full file content instead of a diff
-        with open(filepath + ".tmp", "w") as f:
+        # Pass the code to LLM. 
+        new_code = get_migration_patch(original, instruction, error_feedback)
+
+        with open(filepath, "w") as f:
             f.write(new_code)
 
-        passed, log = run_tests_in_docker(os.path.dirname(filepath))
+        passed, log = run_tests_in_docker(repo_dir)
         if passed:
-            diff = difflib.unified_diff(original.splitlines(), new_code.splitlines(), lineterm="")
-            print("\n".join(diff))
+            diff_text = "\n".join(difflib.unified_diff(
+                original.splitlines(), new_code.splitlines(),
+                fromfile="before", tofile="after", lineterm=""
+            ))
+            print(diff_text)
+            confirm = input("Apply this change? (y/n): ")
+            if confirm.lower() != "y":
+                with open(filepath, "w") as f:
+                    f.write(original)
+                print("Change discarded, original file restored.")
+                return None
+
+            print("✅ Change applied and kept.")
             return new_code
+
         error_feedback = log
-    raise RuntimeError("Migration failed after retries")
+
+    with open(filepath, "w") as f:
+        f.write(original)
+    raise RuntimeError(f"Migration failed after {max_retries} retries.\nLast error:\n{error_feedback}")
